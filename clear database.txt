@@ -1,0 +1,110 @@
+
+TRUNCATE TABLE `user_rol` ;
+TRUNCATE TABLE `user_config` ;
+TRUNCATE TABLE `module_user_access` ;
+TRUNCATE TABLE `op_scrap` ;
+TRUNCATE TABLE `op_transfer` ;
+TRUNCATE TABLE `waiter_place_access`; 
+TRUNCATE TABLE `cash_cashier_access` ;
+TRUNCATE TABLE `user` ;
+
+TRUNCATE TABLE `customer`; 
+TRUNCATE TABLE `employee` ;
+TRUNCATE TABLE `supplier` ;
+
+
+TRUNCATE TABLE `available_product_pos_cash` ;
+TRUNCATE TABLE `visibility_product_pos_cash` ;
+TRUNCATE TABLE `processing_product_place` ;
+TRUNCATE TABLE `production_materials_list` ;
+TRUNCATE TABLE `production` ;
+TRUNCATE TABLE `tecnhical_card_details` ;
+TRUNCATE TABLE `tecnhical_card` ;
+TRUNCATE TABLE `product` ;
+
+
+UPDATE `account` SET `amount` = '0' WHERE 1;
+TRUNCATE TABLE `account_coban` ;
+TRUNCATE TABLE `account_cxc` ;
+TRUNCATE TABLE `account_cxp`;
+TRUNCATE TABLE `account_daily` ;
+TRUNCATE TABLE `account_fiscal`; 
+TRUNCATE TABLE `account_fiscal_result` ;
+TRUNCATE TABLE `account_fiscal_situation` ;
+TRUNCATE TABLE `account_flow_cash` ;
+TRUNCATE TABLE `account_pagan` ;
+TRUNCATE TABLE `account_t`  ;
+TRUNCATE TABLE `fixed_active`;
+TRUNCATE TABLE `payroll`  ;
+
+
+TRUNCATE TABLE `int_category`; 
+TRUNCATE TABLE `pos_category`; 
+
+
+TRUNCATE TABLE `pos_ipv` ;
+TRUNCATE TABLE `pos_order`; 
+TRUNCATE TABLE `pos_order_line`; 
+TRUNCATE TABLE `pos_order_tmp`; 
+TRUNCATE TABLE `pos_order_tmp_line` ;
+TRUNCATE TABLE `pos_session` ;
+TRUNCATE TABLE `pos_table` ;
+TRUNCATE TABLE `pos_tmp_real_consume` ;
+TRUNCATE TABLE `pos_card_product_rel` ;
+TRUNCATE TABLE `cancel_pos_order`; 
+
+
+
+TRUNCATE TABLE `printer`; 
+TRUNCATE TABLE `printer_place_rel` ;
+TRUNCATE TABLE `printer_secundary_place_rel`; 
+
+
+
+
+TRUNCATE TABLE `place` ;
+TRUNCATE TABLE `place_boss` ;
+TRUNCATE TABLE `place_product_out` ;
+
+
+TRUNCATE TABLE `pos_cash` ;
+TRUNCATE TABLE `pos_cash_config` ;
+
+
+TRUNCATE TABLE `purchase`; 
+TRUNCATE TABLE `purchase_line` ;
+TRUNCATE TABLE `cancel_purchase` ;
+
+
+TRUNCATE TABLE `transfer`; 
+TRUNCATE TABLE `scrap`; 
+TRUNCATE TABLE `stock`; 
+
+
+TRUNCATE TABLE `sale_line`; 
+TRUNCATE TABLE `sale`;
+TRUNCATE TABLE `cancel_direct_sale` ; 
+
+
+TRUNCATE TABLE `history_log` ;
+TRUNCATE TABLE `ticket`; 
+TRUNCATE TABLE `message`; 
+TRUNCATE TABLE `notes` ;
+
+TRUNCATE TABLE `lic_code` ;
+TRUNCATE TABLE `lic_info` ;
+
+TRUNCATE TABLE `currency_product_rel` ;
+TRUNCATE TABLE `pack_photo_product_rel` ;
+TRUNCATE TABLE `pos_sub_category` ;
+TRUNCATE TABLE `reservation` ;
+TRUNCATE TABLE `service_invoice` ;
+TRUNCATE TABLE `service_invoice_agregos` ;
+TRUNCATE TABLE `service_invoice_expenses` ;
+TRUNCATE TABLE `service_invoice_img` ;
+TRUNCATE TABLE `service_process` ;
+TRUNCATE TABLE `service_process_lines` ;
+TRUNCATE TABLE `service_type` ;
+TRUNCATE TABLE `service_type_cashier_access` ;
+
+TRUNCATE TABLE `log_eliminaciones` ;

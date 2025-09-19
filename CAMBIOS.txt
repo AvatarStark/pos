@@ -1,0 +1,699 @@
+CAMBIOS DESTILO -- 8 de enero --
+
+
+- Tabla currency
+
+CREATE TABLE currency ( id INT PRIMARY KEY, slug VARCHAR(250), name VARCHAR(250), value FLOAT(11,2) );
+INSERT INTO `currency` (`id`, `slug`, `name`, `value`) VALUES ('1', 'cup_cash', 'CUP Efectivo', '260'), ('2', 'cup_trans', 'CUP Transferencia', '280'), ('3', 'mlc', 'MLC', '1.10'), ('4', 'euros', 'Euros', '0.95');
+
+
+Actualización -- OK --
+
+- El campo notas se usará para distinguir los servicios (libros, impresiones... ).. ej libro 8x12 juanita perez 
+- Descripción detallada de las facturas de clientes..
+- Gestión de tasas de cambio para las facturas( accesible en todo momento)
+- Se elimina el pie de página de los datos de la empresa en la impresión de la facura
+- Gestión mas simplificada en las cantidades en impresiones
+- Al agregar encuadernado se mantiene la interfaz en el actual encuadernado registrado (el usuario decide redirigir la vista)
+
+
+
+*******************************************************************************
+
+CAMBIOS 16 DE ENERO
+
+ALTER TABLE `service_invoice` 
+ADD `amount_cup_cash` FLOAT(11,2) NOT NULL AFTER `amount`, 
+ADD `amount_cup_trans` FLOAT(11,2) NOT NULL AFTER `amount_cup_cash`, 
+ADD `amount_mlc` FLOAT(11,2) NOT NULL AFTER `amount_cup_trans`,
+ADD `amount_euros` FLOAT(11,2) NOT NULL AFTER `amount_mlc`;
+
+
+ALTER TABLE `service_process` ADD `pos_session_id` INT(11) NOT NULL AFTER `id`;
+
+ALTER TABLE `service_invoice` ADD `tax` FLOAT(11,2) NOT NULL AFTER `amount`, ADD `discount` FLOAT(11,2) NOT NULL AFTER `tax`;
+
+ALTER TABLE `service_process` ADD `employee_paid` TINYINT(1) NOT NULL AFTER `employee_id`;
+ALTER TABLE `service_process` ADD `encuadernado_date` DATETIME NOT NULL AFTER `write_date`;
+ALTER TABLE `service_process` ADD `employee_paid_date` DATETIME NOT NULL AFTER `employee_paid`;
+
+
+
+Actualización -- OK --
+- Datos de tasa de cambio segun fecha de creacion de factura
+- Vista al cierre de turno con los servicios registrados
+- Gestión de flujo de efectivo (que pueda visaualizarse desde la vista cajero para que el mismo tenga info de lo que ingresó)
+- Cancelación de factura
+- Acción en lote, Cancelacion de servicios en la factura
+- Pagarle a los empleados lo que han hecho (encuadernado)
+
+
+**********************************************************
+
+
+Cambios febrero
+
+Create Tabla currency_product_rel
+	id  INT
+	currency_id INT
+	product_id INT
+	amount FLOAT
+
+Create Tabla service_invoice_img
+	id  INT
+	path varchar 250
+	invoice_id
+
+ALTER TABLE `pos_cash_config` ADD `allow_multiple_currency` TINYINT(1) NOT NULL AFTER `pos_card_id`;
+esta es cero o uno
+ponerle 1 a la caja de willi
+
+ALTER TABLE `pos_cash_config` ADD `view_print_currency` VARCHAR(250) NOT NULL AFTER `allow_multiple_currency`;
+esta es (usd, cup_cash, cup_trans, mlc, euros)
+ponerle cup_cash a la caja de willi
+
+ALTER TABLE `service_invoice` ADD `view_print_currency` VARCHAR(250) NOT NULL AFTER `amount_euros`;
+ALTER TABLE `service_invoice` ADD `gestor_id` INT(11) NULL AFTER `customer_id`;
+
+ALTER TABLE `service_process` ADD `amount_cup_cash` FLOAT(11,2) NOT NULL AFTER `amount`, ADD `amount_cup_trans` FLOAT(11,2) NOT NULL AFTER `amount_cup_cash`, ADD `amount_mlc` FLOAT(11,2) NOT NULL AFTER `amount_cup_trans`, ADD `amount_euros` FLOAT(11,2) NOT NULL AFTER `amount_mlc`;
+
+ALTER TABLE `service_invoice` ADD `amount_delivery` FLOAT(11,2) NOT NULL AFTER `gestor_id`, ADD `has_img` TINYINT(1) NOT NULL AFTER `amount_delivery`;
+
+ALTER TABLE `service_invoice` ADD `currency_paid` VARCHAR(250) NOT NULL AFTER `view_print_currency`;
+
+ALTER TABLE `service_process` ADD `gestor_paid` TINYINT(1) NOT NULL AFTER `employee_paid_date`;
+ALTER TABLE `service_process` ADD `gestor_paid_date` DATETIME NOT NULL AFTER `gestor_paid`;
+ALTER TABLE `employee` ADD `is_gestor` TINYINT(1) NOT NULL AFTER `write_uid`;
+ALTER TABLE `payroll` ADD `amount_cup_cash` FLOAT(11,2) NOT NULL AFTER `amount`;
+
+
+pluggin de dropzone
+carpeta de img de facturas
+poner los gestores como empleado
+
+
+
+**********************************************************
+
+
+Cambios 14 febrero
+
+ALTER TABLE `user_config` ADD `can_cancel_invoice` TINYINT NOT NULL AFTER `theme_page_footer_option`, ADD `can_finish_invoice` TINYINT NOT NULL AFTER `can_cancel_invoice`;
+
+ALTER TABLE `service_invoice` ADD `user_paid` TINYINT(1) NOT NULL AFTER `has_img`, ADD `user_paid_id` INT(11) NOT NULL AFTER `user_paid`, ADD `user_paid_date` DATETIME NOT NULL AFTER `user_paid_id`;
+
+ALTER TABLE `payroll` ADD `type` VARCHAR(250) NOT NULL AFTER `create_uid`;
+
+- el campo gestor es obligatorio la seleccion
+- lo de las facturas pendientes, cada usuario por separado puede tener facturas pendientes de registros 
+- permisos de cancelar / finalizar facturas
+- interfaz para configuracion de caja y moneda, permisos de usuario / servicios
+
+
+
+Importante: el monto pagado al principio de factura si se paga ya se toma la factura como pagada con usd, porque si se da a escoger entre varios metodos de pago se arma la cagazon con la conversion segun la tasa de cambio y los montos de la factura
+
+
+
+
+
+**********************************************************
+
+
+Cambios fin de mes febrero
+
+ALTER TABLE `customer` CHANGE `address` `address` VARCHAR(250) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+
+ALTER TABLE `employee` ADD `is_mensajero` TINYINT(1) NOT NULL AFTER `is_gestor`;
+
+ALTER TABLE `service_invoice` ADD `mensajero_id` INT(11) NULL AFTER `gestor_id`;
+ALTER TABLE `service_invoice` ADD `paid_cup_cash` FLOAT(11,2) NOT NULL AFTER `user_paid_date`;
+
+
+
+***
+ crear flitro de busqueda en facturas parecido al de reportes y que busque y refrescque ajax que tenga
+ - cliente
+ - gestor
+ - estado (sin pagar, pagado parcial, pagada)
+ - mensajero
+ - rango fecha registro
+ - registro (usuario)
+
+ - add fotos al customer_invoice_detail
+
+
+
+**********************************************************
+
+
+Cambios 2 marzo
+
+- adicion del campo cliente y gestor en el comprobante de pago --- ok
+- separar la revista de lomo duro en la encuadernacion para deducir % de pago a operqario
+- hacer estado de facvtura en revision y que el cajero pueda realizar la operacion
+- permitir adicionar imagenes a la factura --- ok
+- hacer vista compacta en el comprobante de pago
+
+
+
+**********************************************************
+
+
+Cambios 15 marzo
+
+
+ALTER TABLE `service_invoice` ADD `in_revision` TINYINT(1) NOT NULL AFTER `paid_cup_cash`;
+
+- pasar factura a revision
+
+
+
+
+
+**********************************************************
+
+
+Cambios finales marzo
+
+
+
+ALTER TABLE `service_invoice` ADD `priority` TINYINT(1) NOT NULL AFTER `in_revision`;
+ALTER TABLE `user_config` ADD `can_finish_invoice_force` TINYINT(1) NOT NULL AFTER `can_finish_invoice`;
+ALTER TABLE `payroll` ADD `qty_prod_major_500` INT(11) NOT NULL AFTER `type`;
+ALTER TABLE `payroll` ADD `bond_cup_cash` FLOAT(11,2) NOT NULL AFTER `bond`;
+ALTER TABLE `payroll` ADD `paid_cup_cash` FLOAT(11,2) NOT NULL AFTER `paid`;
+
+crear tabla pos_sub_category (pos_category_id int, product_id int)
+
+done
+- bloqueo de caja
+- prioridad en facturas
+- ampliar imagenes
+- cierrre de factura forzada,gestionar permisos de quien pueda haccelor
+- mejora vista facturas de clientes
+- sistema de recompensa
+- categorias subcategorias y filtrado
+
+
+** Implementar**
+
+Notificanion en la vista cliente de
+- facturas que esten pendientes de pago
+- Facturas que esten con todos los procesos/servicios terminados (o sea que el cliente no los ha recogido)
+- facturas que este pagada y que esten con todos los servicios entregados ( o sea que pueden ser ya finalizadas) 
+- facturas en revision
+
+ Notificacion en la vista admon
+ - facturas sin pagar al cajero, al gestor, al operario, en revision, pendientes de pago, listas para finalizar
+
+
+
+
+**********************************************************
+
+
+Cambios finales marzo
+
+ALTER TABLE `user_config` ADD `can_alter_paid` TINYINT(1) NOT NULL AFTER `can_finish_invoice_force`;
+
+
+actualizar el slug ="minibook4x6" del producto minibook4x6
+
+. Cambios
+- cantidad impresiones par en minibook
+- cantidad impresiones par en revistas
+- modificar pago en facturas
+
+
+
+
+
+**********************************************************
+
+
+Cambios 2 abril
+
+
+
+ALTER TABLE `pos_cash_config` ADD `product_stock_show` TINYINT(1) NOT NULL AFTER `write_uid`, ADD `product_stock_verify_place_id` INT(11) NOT NULL AFTER `product_stock_show`;
+
+
+
+
+
+
+-- Verificacion de sobre venta.. verificar si hay mas servicios iniciados que la cantidad maxima de producccion
+
+
+**********************************************************
+
+
+Cambios finales de mayo
+
+ALTER TABLE `pos_cash_config` ADD `sale_direct_data_set` TINYINT(1) NOT NULL AFTER `product_stock_verify_place_id`;
+
+- Crear el producto esquinero (comprable), ponerle de slug 'esquinero' y transferir cantidades para el area encuadernado
+- al producto laminado caliente ponerle de slug 'laminadocaliente'
+
+* los esquineros se rebajan desde encuadernado, el laminado de impresiones
+
+CAMBIOS
+- Vista de servicios por gestores
+- Implementacion de clientes, gestores y facturas en venta directa
+- Correccion de montos de encuadernado (operario)
+- Correccion datos dashboard
+- Correccion de cierre de factura forzado (los estados)
+- Gestion de stock de esquinero y laminado caliente
+
+
+** el producto esquiero no esta regisrado... para la rebaja automatica en encuadernado
+registrar la rebaja atimatica (esquienro y laminado caliente) al finalizar factura, actualizar los costos del servicio y el profit, el inventario segun el area
+
+
+** implementar:
+esta es una de las cosas que mas valor le da al sistema
+un reporte ampliado que genere las ventas de los servicios, los tipos de servicios, los productos de los servicios, las categorias, las areas, 
+
+** el campo  end_date en base de datos de la tabla services_process, si presenta problemas en futuro al realizar consultas, hacer un codigo que tome todos los servicios ue esten finalizados y actualice este campor por la fecvha en que finalizo la factura pq este cambio se hizo reciente y los servicios antiguos no tienen eso actualizado
+
+
+
+
+**********************************************************
+
+
+Cambios implentacion de calendario
+
+ALTER TABLE `user_config` ADD `can_manage_reservation` TINYINT(1) NOT NULL AFTER `can_alter_paid`;
+ALTER TABLE `reservation` ADD `paid` FLOAT(11,2) NOT NULL AFTER `create_uid`;
+
+
+
+
+ALTER TABLE `reservation` CHANGE `notes` `notes` VARCHAR(1000) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+
+
+
+
+**********************************************************
+
+
+Cambios implentacion de fotografia
+
+- crear los servicios paquetes de fotografias (I, II, III, IV, V) de tipo fotografia
+
+CREATE TABLE `bd_pos`.`pack_photo_product_rel` ( `id` INT(11) NOT NULL AUTO_INCREMENT, `pack_photo_id` INT(11) NULL , `product_id` INT(11) NULL , `price` FLOAT(11,2) NOT NULL , `is_aditional` TINYINT(1) NOT NULL , `description` VARCHAR(250) NOT NULL , `is_product` TINYINT(1) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+
+CREATE TABLE `bd_pos`.`service_invoice_agregos` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `invoice_id` INT(11) NOT NULL , `description` VARCHAR(250) NOT NULL , `price` FLOAT(11,2) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+
+ALTER TABLE `service_invoice` ADD `reservation_id` INT NULL AFTER `priority`;
+
+ALTER TABLE `service_invoice` ADD `is_pack_photo` TINYINT(1) NOT NULL AFTER `reservation_id`;
+
+ALTER TABLE `account_cxc` ADD `service_invoice_id` INT(11) NULL AFTER `service_process_id`;
+
+ALTER TABLE `service_process` ADD `editor_id` INT(11) NULL AFTER `total_price_panoramica`, ADD `editor_paid` TINYINT(1) NOT NULL AFTER `editor_id`, ADD `edit_date` DATETIME NOT NULL AFTER `editor_paid`, ADD `editor_paid_date` DATETIME NOT NULL AFTER `edit_date`;
+
+
+
+** Importante
+. agregar gastos a la factura (maquillaje, alquiler de carro)
+. Que al cerrar con cierre forzado en una factura que sea de fotografia notificar con mensaje que es una factura de fotografia
+. poder elimanr los agregos en las facturas
+. cuando pague al editor poner en la factura ese registro como un gasto?.. preguntar si lo quien asi
+
+
+** ver lo de cerrar facturas, que estoy tomando que la factura que se crea en fotografia o lleva gestion de cxc y entonces no se puede incrmentar o decrementar esa cuenta a la hora de cerrar, tambien ver que cuandoi hago u cierre forzado el sistema te actualiza el pago en las facturas y hay que corregir eso, o lleva la gestion de cxc desde el principio o al finalizar factura se haga todo el proceso contable, creo es mejor llevarlo con cxc desde el rpincipio.... de paso tracear lo del saldo invalido de cxc en elo plan contable
+
+* ver en la parte de admon todas las vistas donde hay paquete de profctos, que el paqueten no sale con el estado que tiene qye salir eso es que colamente esta modelado para impresiones y envuasrnado, tambin las notas qe sale con los br li, y sale como merma los productos incluidos en la factura
+
+
+agregado
+
+tabla service_invoice_expenses (id, invoice_id,description,price)
+ALTER TABLE `user_config` ADD `can_manage_expense_invoice` TINYINT(1) NOT NULL AFTER `can_manage_reservation`;
+
+
+
+--------------------------------------------------------------------
+
+
+
+------- ALQUILER DE TRAJES
+
+// actualizar estos archivo:
+
+C:\xampp\htdocs\pos\assets\global\css\components-md.min.css
+C:\xampp\htdocs\pos\assets\global\plugins\bootstrap-datepicker\js\bootstrap-datepicker.js
+
+
+// base de datos:
+
+INSERT INTO `config` (`id`, `slug`, `value`) VALUES (NULL, 'margen_disponibilidad', '1'), (NULL, 'notificacion_reserva', '3');
+
+ALTER TABLE `service_process` ADD `date_recogida` DATE NOT NULL AFTER `editor_paid_date`, ADD `date_reservacion` DATE NOT NULL AFTER `date_recogida`, ADD `date_devolucion` DATE NOT NULL AFTER `date_reservacion`;
+
+ALTER TABLE `service_invoice` ADD `is_alquiler` TINYINT(1) NOT NULL AFTER `is_pack_photo`;
+
+ALTER TABLE `service_invoice` ADD `date_recogida` DATE NOT NULL AFTER `is_alquiler`, ADD `date_reservacion` DATE NOT NULL AFTER `date_recogida`, ADD `date_devolucion` DATE NOT NULL AFTER `date_reservacion`;
+
+ALTER TABLE `service_process` ADD `reservation_id` INT(11) NULL AFTER `date_devolucion`;
+
+ALTER TABLE `reservation` ADD `description` VARCHAR(250) NOT NULL AFTER `service_type_id`;
+
+ALTER TABLE `reservation` ADD `create_after_invoice` TINYINT(1) NOT NULL AFTER `paid`, ADD `invoice_id` INT(11) NULL AFTER `create_after_invoice`;
+
+
+
+sugerencias
+se recomienda tener la caja de alquiler en moneda usd
+
+
+Elementos configurables
+
+. Margen de disponibilidad: La cantidad de dias de diferencia de cuando se devuelve un traje hasta que se pueda alquilar nuevamante, osea si devuelven el traje el miercoles no podra estar disponible hasta el viernes, 1 dia seria entonces, minimo 1
+
+. Tiempo de notificacion de reserva: La cantidad de dias con anticipacion para notificar de la reserva de un traje, sugerir alistar, los arreglos, planchar etc, sugerido de 3 a 5 dias, sugerencia, si le pongo 5 dias de aviso con antelacio cuando llegue a los 5 dias de antelacion empiece a avisarme todos los dias hasta que llegue el dia 0
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Actualizacion septiembre 2024
+
+- La gestion de mermas desde el pos, (causa), responsable (empleado) y estadisticas en rango de tiempo -- OK
+- Correccion de bug, en vista cajero (dashboard - interfaz), muestra mensaje de error.. ---- OK
+- Correccion de bug, vista admin, facturas, no deja ver la factura --- OK
+- Correccion vista factura de empleado -- OK
+- Notas al enviar facturas a revision, desde vista cajero ---- OK
+- Incorporacion de servicio decoraciones, gestion de ingresos y gastos----OK
+- Hacer configurable la bonificacion en los pagos (referencia: precio sobre 500...)---- OK
+- Gestion de pago a comercial (servicio fotografia), estadisticas--- OK
+- Incorporacion de gestion de pagos a empleados -- diseñador (tipo diseños)---OK
+- Visualizar consumo de materiales, ingredientes.. por rango de tiempo... OK
+- desagregacion por servicios.. resumen.. OK
+
+
+- Incorporacion de gestion de pagos a empleados (sublimacion)
+
+
+
+----
+
+cambiar en el php.ini el execution de 30 a 3000
+
+copiar pluggin
+C:\xampp\htdocs\pos\assets\global\plugins\ladda
+
+. cambiar en el index.php:
+    define('ENVIRONMENT', 'production');
+
+ALTER TABLE `service_invoice` ADD `notes_revision` VARCHAR(250) NOT NULL AFTER `notes`;
+ALTER TABLE `scrap` ADD `employee_id` INT NULL AFTER `notes`;
+ALTER TABLE `service_invoice` ADD `is_decoracion` TINYINT(1) NOT NULL AFTER `is_alquiler`;
+INSERT INTO `config` (`id`, `slug`, `value`) VALUES (NULL, 'qty_prod_major', '500');
+ALTER TABLE `payroll` CHANGE `qty_prod_major_500` `qty_prod_major` INT(11) NOT NULL;
+INSERT INTO `account` (`id`, `code`, `name`, `account_type_id`, `path`, `amount`, `description`, `weight`, `sub_account`, `create_date`, `write_date`, `create_uid`, `write_uid`) VALUES (NULL, '318', 'Comida', '2', 'comid', '0', 'Gastos por comida', '7.11', '6', '2023-09-10 00:00:00', '2023-09-10 00:00:00', '1', '1');
+
+
+
+en la vista compact habra desfasaje entre las mermas y los gastos por la actalizacion del codigo y los asientos
+
+creo producto de servicio, decoracion
+creo producto tipo fabricado, creo carta con 0x0 (boda, evento x, cumple etc...)
+
+
+ 
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Actualizacion octubre 2024
+
+- qr en factura
+- listado de mermas
+- gestion de gestores en citas
+
+libreria phpqrcode
+- C:\xampp\htdocs\pos\application\libraries\phpqrcode
+
+css todo-2.css
+C:\xampp\htdocs\pos\assets\pages\css\todo-2.
+
+crear carpeta para el qr
+C:\xampp\htdocs\pos\assets\global\img\qr
+
+ALTER TABLE `employee` ADD `mac` VARCHAR(250) NOT NULL AFTER `is_mensajero`;
+ALTER TABLE `reservation` ADD `gestor_id` INT(11) NOT NULL AFTER `customer_id`;
+ALTER TABLE `scrap` CHANGE `notes` `notes` VARCHAR(250) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+INSERT INTO `config` (`id`, `slug`, `value`) VALUES (NULL, 'bussines_mode', 'ampliado');
+ALTER TABLE `reservation` ADD `gestor_paid` TINYINT(1) NOT NULL AFTER `gestor_id`, ADD `gestor_paid_date` DATETIME NOT NULL AFTER `gestor_paid`;
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+version 3.0
+
+ALTER TABLE `scrap` ADD `causa` TEXT NULL DEFAULT NULL AFTER `subtotal`;
+UPDATE `scrap` SET causa='rotura';
+ALTER TABLE `stock` CHANGE `qty` `qty` FLOAT(11,2) NOT NULL;
+ALTER TABLE `production` CHANGE `qty` `qty` FLOAT(11,2) NOT NULL;
+ALTER TABLE `production_materials_list` CHANGE `qty` `qty` FLOAT(11,2) NOT NULL;
+ALTER TABLE `pos_tmp_real_consume` CHANGE `qty` `qty` FLOAT(11,2) NOT NULL;
+INSERT INTO `config` (`id`, `slug`, `value`) VALUES (NULL, 'percent_paid_operario', '15');
+ALTER TABLE `pos_order_line` CHANGE `sale_price` `sale_price` FLOAT(11,2) NOT NULL;
+ALTER TABLE `pos_order_line` CHANGE `subtotal` `subtotal` FLOAT(11,2) NOT NULL;
+ALTER TABLE `pos_order_line` CHANGE `profit` `profit` FLOAT(11,2) NOT NULL;
+ALTER TABLE `account` CHANGE `amount` `amount` FLOAT(11,2) NOT NULL;
+ALTER TABLE `account_coban` CHANGE `amount` `amount` FLOAT(11,2) NOT NULL;
+ALTER TABLE `account_pagan` CHANGE `amount` `amount` FLOAT(11,2) NOT NULL;
+ALTER TABLE `account_t` CHANGE `d_left` `d_left` FLOAT(11,2) NOT NULL;
+ALTER TABLE `account_t` CHANGE `h_right` `h_right` FLOAT(11,2) NOT NULL;
+ALTER TABLE `account_t` CHANGE `amount` `amount` FLOAT(11,2) NOT NULL;
+
+INSERT INTO `config` (`id`, `slug`, `value`) VALUES (NULL, 'show_all_table', '1');
+ALTER TABLE `pos_ipv` CHANGE `start` `start` FLOAT(11,2) NOT NULL;
+ALTER TABLE `pos_ipv` CHANGE `received` `received` FLOAT(11,2) NOT NULL ;
+ALTER TABLE `pos_ipv` CHANGE `scrap` `scrap` FLOAT(11,2) NOT NULL ;
+ALTER TABLE `pos_ipv` CHANGE `transfer` `transfer` FLOAT(11,2) NOT NULL ;
+ALTER TABLE `pos_ipv` CHANGE `end` `end` FLOAT(11,2) NOT NULL ;
+ALTER TABLE `pos_ipv` CHANGE `sold` `sold` FLOAT(11,2) NOT NULL;
+ALTER TABLE `pos_ipv` CHANGE `avialable` `avialable` FLOAT(11,2) NOT NULL;
+
+ALTER TABLE `product` CHANGE `name` `name` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+
+CREATE TABLE ficha_costo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    concepto VARCHAR(255) NOT NULL,
+    concepto_string VARCHAR(255) NOT NULL,
+    fila VARCHAR(50) NOT NULL,
+    costo FLOAT(11, 2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `config` (`id`, `slug`, `value`) VALUES (NULL, 'gastos_tributarios', '14');
+
+ALTER TABLE `pos_cash_config` ADD `qty_type_stock` VARCHAR(10) NOT NULL AFTER `sale_direct_data_set`;
+
+INSERT INTO `config` (`id`, `slug`, `value`, `updated_at`) VALUES (NULL, 'last_sync', '2025-02-26 11:59:00', CURRENT_TIMESTAMP);
+
+INSERT INTO `currency` (`id`, `slug`, `name`, `value`, `updated_at`) VALUES ('5', 'usd', 'USD', '1', CURRENT_TIMESTAMP);
+
+ALTER TABLE `currency` ADD `principal` TINYINT(1) NOT NULL AFTER `value`;
+ALTER TABLE `currency` CHANGE `value` `value` FLOAT(11,6) NULL DEFAULT NULL;
+ALTER TABLE `currency` ADD `active` TINYINT(1) NOT NULL DEFAULT '1' AFTER `principal`;
+
+UPDATE `currency` SET `principal` = '1' WHERE `currency`.`slug` = 'cup_cash';
+UPDATE `currency` SET `name` = 'CUP', `value` = '1.000000' WHERE `currency`.`slug` = 'cup_cash';
+UPDATE `currency` SET `name` = 'Transferencia', `value` = '1.100000' WHERE `currency`.`slug` = 'cup_trans';
+UPDATE `currency` SET `value` = '0.004000' WHERE `currency`.`slug` = 'mlc';
+UPDATE `currency` SET `value` = '0.002858' WHERE `currency`.`slug` = 'euros';
+UPDATE `currency` SET `value` = '0.002858' WHERE `currency`.`slug` = 'usd';
+
+ALTER TABLE `pos_order` ADD `currency_paid` VARCHAR(20) NOT NULL DEFAULT 'cup_cash' AFTER `total_amount`, ADD `tasa_converted` FLOAT(11,2) NOT NULL AFTER `currency_paid`;
+
+
+#para actualizar todas las filas para que tomen el valor en `tasa_converted` de `total_amount`
+UPDATE pos_order SET tasa_converted = total_amount;
+
+
+INSERT INTO `config` (`id`, `slug`, `value`, `updated_at`) VALUES (NULL, 'allow_no_admin_change_currency', '0', CURRENT_TIMESTAMP);
+
+ALTER TABLE `pos_cash_config` ADD `order_by` VARCHAR(25) NOT NULL DEFAULT 'default' AFTER `sale_direct_data_set`;
+
+UPDATE `pos_card` SET `path` = 'costo', `name` = 'Costo' WHERE `pos_card`.`id` = 4; 
+
+ALTER TABLE `printer` ADD `server` VARCHAR(250) NOT NULL DEFAULT 'server' AFTER `connection`;
+
+ALTER TABLE `fixed_active` ADD `place_id` INT(11) NULL AFTER `seat`;
+
+ALTER TABLE `printer` ADD `paper` VARCHAR(5) NOT NULL DEFAULT '80' AFTER `server`;
+
+ALTER TABLE `stock` CHANGE `unit_price` `unit_price` FLOAT(11,4) NOT NULL;
+ALTER TABLE `scrap` CHANGE `unit_price` `unit_price` FLOAT(11,4) NOT NULL;
+ALTER TABLE `transfer` CHANGE `unit_price` `unit_price` FLOAT(11,4) NOT NULL;
+ALTER TABLE `product` CHANGE `cost_price` `cost_price` FLOAT(11,4) NOT NULL;
+ALTER TABLE `purchase_line` CHANGE `unit_price` `unit_price` FLOAT(11,4) NOT NULL;
+ALTER TABLE `pos_order_line` CHANGE `cost_price` `cost_price` FLOAT(11,4) NOT NULL;
+ALTER TABLE `pos_order_line` CHANGE `cost_total` `cost_total` FLOAT(11,4) NOT NULL;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Actualizacion enero 2025 DEstilo
+
+ALTER TABLE `service_invoice` ADD `fecha_entrega` DATE NULL AFTER `write_uid`;
+ALTER TABLE `user_config` ADD `can_view_flow_cash` TINYINT(1) NOT NULL AFTER `can_manage_expense_invoice`;
+
+
+CREATE TABLE service_invoice_flow_cash (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT NOT NULL,
+    amount FLOAT(11,2) NOT NULL,
+    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    create_uid INT NOT NULL
+);
+
+- Incluir en factura y calendario fecha de entrega estimada (14 dias habiles ).. OK
+- Actualizar factura de cliente con estatus del proceso y fecha de entrega estimada.. OK
+- Actualizar factura de taller con fecha de entrega estimada.. OK
+- Flujo de efectivo de las facturas.. OK
+
+** solo se añade la fecha de entrega prevista a facturas de encuadernado
+** al borrar factura de encuadernado se eliminara el evento en calendar
+** solo se muestra la fecha estimada en print para taller
+** la factura debe ser cerrada desde panel de caja pues es necesario capturar los datos de la sesion
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Actualizacion abril 2025 DEstilo
+
+ALTER TABLE `service_invoice` ADD `flow_cash_check` TINYINT(1) NOT NULL AFTER `date_devolucion`;
+ALTER TABLE `service_invoice` ADD `flow_cash_check_by` INT(11) NOT NULL AFTER `flow_cash_check`, ADD `flow_cash_check_date` DATETIME NOT NULL AFTER `flow_cash_check_by`;
+
+
+
+
+
+PENDIENTE
+- Credito en facturas
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Para la SINCRONIZACION
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE log_eliminaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tabla VARCHAR(255),
+    registro_id INT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+Correr este codigo en un modelo:
+
+SELECT CONCAT(
+    'DELIMITER // ',
+    'CREATE TRIGGER after_', table_name, '_delete ',
+    'AFTER DELETE ON ', table_name, ' ',
+    'FOR EACH ROW BEGIN ',
+    'INSERT INTO log_eliminaciones (tabla, registro_id) VALUES (\'', table_name, '\', OLD.id); ',
+    'END;// DELIMITER ;'
+) AS trigger_sql
+FROM information_schema.tables
+WHERE table_schema = 'TU_BASE_DE_DATOS';
+
+luego correrlo con foreach y mostrarlo con echo para luego copiarlo y ejecturalo como sql en phpmyadmin
+
+
+
+PENDIENTE BITSELL
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+En negocio reina maria cosmeticos
+
+- la vista de crear producto poner en hide las tipologias "Producto a pedido" y "Vendibles"
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+- hacer extraccion de caja con concepto, esto aplica para cundo se quiere extraer de la caja (ejemplo 100 $ almuerzo)
+
+- hacer reporte de mermas segun causa en un periodo de tiempo
+
+
+para cliente mesa 41 y 52
+	. gestionar la factura en el cajero para que se pueda imprimir tanto por papel termico como papel carta
+
+para cliente tridente
+	. hacer notas en los pedidos en el pane de venta para cuando se paga la cuenta parcial en cup y transferencia
+
+para cliente ciego avila
+- gacer la carta altaena 1 como carta precio costo y tomar automaticamente el costo de los productos
+- la gestion de cxc desde el panel venta.. ok
+- gestionar que tambien se puedan vender a los empleados, o sea puedo venderle pizza a los empleados a precio costo y a cuenta por pagar
+- los activos fijos revisar
+
+Para cliente heikel ciego avila
+	. Hacer compras con estado borrador, que se puedan pagar sin recibir la mercancia, e ir haciendo pagos, tipica gestion de las importaciones, que pagas a un proveedor sin recibir la mercancia
+	. Lo de las compras con costo de referecncia en usd, al final trabajo en cup pero con una tasa referente a usd para cuando el usd cambie, poder actuaoiar los costos de los productos en base a como fueron comprados
+	. Centralizar y desglosar el efectivo, que las areas, tengan su propio efectivo y que yo pueda moverlo de un lado para otro, ademas crear cuentas de banco y poder crear mas cuentas de efectuvo y poder trabajarlas.. mover los fondos (fondo de inversion..)
+
+para cliente yunet
+	- poner el campo sku aparte del codigo(este usarlo para barcode).. ok
+	- ver el tema de los precios en las tasas de cambio, redondear en el panel de venta, hacer configurable.. ok
+
+- la impresion desde la caja, conectar la impresora a la caja, no al serrvidor, esto tambien sirva para el hosting ** Esta adelantado >>  Validar bien el flujo, obtener datos de impresora y enviarlos por ajax al local y poner el tipo de impresion configurable (ipresora por red, compartida o local, hacerlo asociada a la caja o l dispositivo, valorar)
+
+cliente camilo
+	. ver reportes por categorias (imgresos, utilidad)
+	. desglosar efectivo(en cajam en banco, fondo, en casa), trabajar con capitales
+
+- Poder hacer extraccion de capital para beneficio propio para uso peronal, divendeondo de utilidad
+- hacer en contabilidad el efectivo en caja y en banco, que este sincronice con las ventas pagadas por transferencias
+- Hacer desglose de denominacion de los billetes en la caja al cierremde turno, verlos por moneda, ejemplo en usd 100 x 20, 50 x 30, en cup tanto de 100 y asi sucesivamente, para ver si hay sobrante o faltante
+
+para cliente de centro habana reinier
+
+OK que permita desde el punto de venta cuando un producto tenga stock, saber si hay mas en almacen u otra area
+
+en el panel de venta meterle pincha al area esa, que se puedan con dezlazamiento mover los productos del carrito, botones para una pila de cosas, eliminar pedido, cambiar carta, cuenta casa
+
+** importante, ver cuando creo un producto fabricado almacenable vendible que cuando lo fabrico y lo transfiero a un area y su procesamiento es por un area de producccion hay que marvharlo, eso cambiarlo para que sea funcional
+
+** mejorar  la importancion por excell, cuado un producto esta repetido, y otras mejoras que se pueda hacer
+
+** poner configurable que las cantidades al agrgar al carrito sean int o float
+
+OK poner editable que en el panel de venta solo salgan los productos con stock
+
+** poder ordernar los productos por precio o alfabeticamente en el panel de venta
+
+OK.. poner el carrito fijo con sticky
+
+** poner en los productos un campo para el codigo de barras y otro para el SKU, dejar el que esta ahora para codigo de barra y agregar una columna para SKU
+
+
+
+
+
+
+
+

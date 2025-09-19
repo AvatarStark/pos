@@ -1,0 +1,56 @@
+
+UPDATE `account` SET `amount` = '0' WHERE 1;
+
+
+
+
+TRUNCATE TABLE `account_coban` ;
+TRUNCATE TABLE `account_cxc` ;
+TRUNCATE TABLE `account_cxp`;
+TRUNCATE TABLE `account_daily` ;
+
+TRUNCATE TABLE `account_flow_cash` ;
+TRUNCATE TABLE `account_pagan` ;
+TRUNCATE TABLE `account_t`  ;
+TRUNCATE TABLE `fixed_active`;
+TRUNCATE TABLE `payroll`  ;
+
+
+TRUNCATE TABLE `pos_session` ;
+TRUNCATE TABLE `pos_ipv` ;
+TRUNCATE TABLE `pos_order`; 
+TRUNCATE TABLE `pos_order_line`; 
+TRUNCATE TABLE `pos_order_tmp`; 
+TRUNCATE TABLE `pos_order_tmp_line` ;
+
+TRUNCATE TABLE `pos_tmp_real_consume` ;                                             
+TRUNCATE TABLE `cancel_pos_order`; 
+TRUNCATE TABLE `place_product_out`; 
+
+
+TRUNCATE TABLE `purchase`; 
+TRUNCATE TABLE `purchase_line` ;
+TRUNCATE TABLE `cancel_purchase` ;
+
+
+TRUNCATE TABLE `transfer`; 
+TRUNCATE TABLE `scrap`; 
+TRUNCATE TABLE `stock`; 
+
+
+TRUNCATE TABLE `sale_line`; 
+TRUNCATE TABLE `sale`;
+TRUNCATE TABLE `cancel_direct_sale` ; 
+
+TRUNCATE TABLE `production`; 
+TRUNCATE TABLE `production_materials_list`; 
+
+
+TRUNCATE TABLE `ticket`; 
+TRUNCATE TABLE `message`; 
+TRUNCATE TABLE `notes` ;
+
+TRUNCATE TABLE `service_process` ;
+TRUNCATE TABLE `service_invoice` ;
+
+

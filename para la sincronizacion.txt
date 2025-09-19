@@ -1,0 +1,83 @@
+Para la sincronizacion
+
+- Crear archivos
+	sync.php (revisar url y puertos)
+	sync_log.txt 
+
+- Cambiar la url del host (servidor) en la funcion Config/sync_Send_Automatic
+	$ch = curl_init("https://reinier.alabana.shop/config/sync_Catch");
+
+- Crear tarea programada
+
+
+Para Reinier Centro Habana Marquez Gonzalez
+. Reemplazar
+	Controller: Config
+	Model: Config_model
+. Archivos nuevos (sync.php y sync_log.txt )
+. API: f3a9c7d4b2e1y89f6d5c4b3a2e1f0d9c8b7a6f5e4d3c2b1a0
+. URL: reinier.alabana.shop
+
+
+
+******************************
+Programador de Tareas
+******************************
+
+-----------------------------------------------------------------------------------------------------
+Opción 1: Usar el Programador de Tareas con cURL
+-----------------------------------------------------------------------------------------------------
+
+Puedes programar una tarea en Task Scheduler para ejecutar un comando cURL que llame a la URL de sincronización.
+
+    Abre el Programador de Tareas en Windows (taskschd.msc desde Ejecutar Win + R).
+
+    Crea una Nueva Tarea Básica y sigue estos pasos:
+
+        Nombre: Sync Bitsell
+
+        Disparador: Diariamente
+
+        Repetir cada: 30 minutos
+
+        Acción: Iniciar un programa
+
+        Programa o script: C:\Windows\System32\curl.exe
+
+        Agregar argumentos:
+
+        -X GET http://localhost/pos/config/sync_Send_Automatic
+
+    Guarda la tarea y ejecútala manualmente para probar.
+
+Esto ejecutará la sincronización cada 30 minutos automáticamente.
+
+
+-----------------------------------------------------------------------------------------------------
+Opción 2: Usar un Script PHP con file_get_contents o cURL
+-----------------------------------------------------------------------------------------------------
+
+Si prefieres manejarlo desde PHP, puedes crear un archivo sync.php en C:\xampp\htdocs\pos\sync.php con el siguiente contenido:
+
+<?php
+$url = "http://localhost/pos/config/sync_Send_Automatic";
+
+$response = file_get_contents($url);
+
+file_put_contents('sync_log.txt', date('Y-m-d H:i:s') . " - " . $response . "\n", FILE_APPEND);
+
+Luego, en el Programador de Tareas, en vez de usar curl.exe, usa:
+
+    Programa o script: C:\xampp\php\php.exe
+
+    Agregar argumentos: C:\xampp\htdocs\pos\sync.php
+
+Verificación
+
+Para asegurarte de que funciona:
+
+    Prueba ejecutando la tarea manualmente.
+
+    Revisa el archivo sync_log.txt para ver si se está ejecutando correctamente.
+
+    Puedes abrir http://localhost/pos/config/sync_Send_Automatic en el navegador para ver la respuesta.
